@@ -1,0 +1,84 @@
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(PlatformToolset)' == 'v120' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86') And '$(AndroidAPILevel)' == ''">
+    <Link>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)' == 'Debug'">$(MSBuildThisFileDirectory)..\..\lib\native\v120\windesktop\msvcstl\Win32\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)' == 'Release'">$(MSBuildThisFileDirectory)..\..\lib\native\v120\windesktop\msvcstl\Win32\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(PlatformToolset)' == 'v120' And '$(Platform)' == 'x64' And '$(AndroidAPILevel)' == ''">
+    <Link>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)' == 'Debug'">$(MSBuildThisFileDirectory)..\..\lib\native\v120\windesktop\msvcstl\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)' == 'Release'">$(MSBuildThisFileDirectory)..\..\lib\native\v120\windesktop\msvcstl\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(PlatformToolset)' == 'v140' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')  And '$(AndroidAPILevel)' == ''">
+    <Link>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)' == 'Debug'">$(MSBuildThisFileDirectory)..\..\lib\native\v140\windesktop\msvcstl\Win32\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)' == 'Release'">$(MSBuildThisFileDirectory)..\..\lib\native\v140\windesktop\msvcstl\Win32\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(PlatformToolset)' == 'v140' And '$(Platform)' == 'x64' And '$(AndroidAPILevel)' == ''">
+    <Link>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)' == 'Debug'">$(MSBuildThisFileDirectory)..\..\lib\native\v140\windesktop\msvcstl\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)' == 'Release'">$(MSBuildThisFileDirectory)..\..\lib\native\v140\windesktop\msvcstl\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <Target Name="libjpeg_turbo_android" BeforeTargets="Link" DependsOnTargets="$(ComputeLinkInputsTargets)">
+		<ItemGroup Condition="'$(PlatformToolset)' == 'Clang_3_8' And '$(Platform)' == 'x86' And '$(AndroidAPILevel)' != '' And '$(ConfigurationType)' == 'DynamicLibrary'">
+			<Link Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\x86\*.so" />
+			<MyPackageSourceFiles Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\x86\*.so"/> 
+		</ItemGroup>
+		<ItemGroup Condition="'$(PlatformToolset)' == 'Clang_3_8' And '$(Platform)' == 'x64' And '$(AndroidAPILevel)' != '' And '$(ConfigurationType)' == 'DynamicLibrary'">
+			<Link Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\x86_64\libjpeg-turbo_md.so" />
+			<MyPackageSourceFiles Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\x86_64\*.so"/> 
+		</ItemGroup>
+		<ItemGroup Condition="'$(PlatformToolset)' == 'Clang_3_8' And '$(Platform)' == 'ARM' And '$(AndroidAPILevel)' != '' And '$(ConfigurationType)' == 'DynamicLibrary'">
+			<Link Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\armeabi\libjpeg-turbo_md.so" />
+			<MyPackageSourceFiles Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\armeabi\*.so"/> 
+		</ItemGroup>
+		<ItemGroup Condition="'$(PlatformToolset)' == 'Clang_3_8' And '$(Platform)' == 'ARM64' And '$(AndroidAPILevel)' != '' And '$(ConfigurationType)' == 'DynamicLibrary'">
+			<Link Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\arm64-v8a\libjpeg-turbo_md.so" />
+			<MyPackageSourceFiles Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\arm64-v8a\*.so"/> 
+		</ItemGroup>
+		<ItemGroup Condition="'$(PlatformToolset)' == 'Clang_3_8' And '$(Platform)' == 'mips' And '$(AndroidAPILevel)' != '' And '$(ConfigurationType)' == 'DynamicLibrary'">
+			<Link Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\mips\libjpeg-turbo_md.so" />
+			<MyPackageSourceFiles Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\mips\*.so"/> 
+		</ItemGroup>
+		<ItemGroup Condition="'$(PlatformToolset)' == 'Clang_3_8' And '$(Platform)' == 'mips64' And '$(AndroidAPILevel)' != '' And '$(ConfigurationType)' == 'DynamicLibrary'">
+			<Link Include="$(MSBuildThisFileDirectory)l..\..\lib\native\android\clang\mips64\libjpeg-turbo_md.so" />
+			<MyPackageSourceFiles Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\mips64\*.so"/> 
+		</ItemGroup>
+		<ItemGroup Condition="'$(PlatformToolset)' == 'Clang_3_8' And '$(Platform)' == 'armeabi-v7a' And '$(AndroidAPILevel)' != '' And '$(ConfigurationType)' == 'DynamicLibrary'">
+			<Link Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\armeabi-v7a\libjpeg-turbo_md.so" />
+			<MyPackageSourceFiles Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\armeabi-v7a\*.so"/> 
+		</ItemGroup>
+		<ItemGroup Condition="'$(PlatformToolset)' == 'Clang_3_8' And '$(Platform)' == 'x86' And '$(AndroidAPILevel)' != '' And '$(ConfigurationType)' == 'StaticLibrary'">
+			<Link Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\x86\libjpeg-turbo_mt.a" />
+		</ItemGroup>
+		<ItemGroup Condition="'$(PlatformToolset)' == 'Clang_3_8' And '$(Platform)' == 'x64' And '$(AndroidAPILevel)' != '' And '$(ConfigurationType)' == 'StaticLibrary'">
+			<Link Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\x86_64\libjpeg-turbo_mt.a" />
+		</ItemGroup>
+		<ItemGroup Condition="'$(PlatformToolset)' == 'Clang_3_8' And '$(Platform)' == 'ARM' And '$(AndroidAPILevel)' != '' And '$(ConfigurationType)' == 'StaticLibrary'">
+			<Link Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\armeabi\libjpeg-turbo_mt.a" />
+		</ItemGroup>
+		<ItemGroup Condition="'$(PlatformToolset)' == 'Clang_3_8' And '$(Platform)' == 'ARM64' And '$(AndroidAPILevel)' != '' And '$(ConfigurationType)' == 'StaticLibrary'">
+			<Link Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\arm64-v8a\libjpeg-turbo_mt.a" />
+		</ItemGroup>
+		<ItemGroup Condition="'$(PlatformToolset)' == 'Clang_3_8' And '$(Platform)' == 'mips' And '$(AndroidAPILevel)' != '' And '$(ConfigurationType)' == 'StaticLibrary'">
+			<Link Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\mips\libjpeg-turbo_mt.a" />
+		</ItemGroup>
+		<ItemGroup Condition="'$(PlatformToolset)' == 'Clang_3_8' And '$(Platform)' == 'mips64' And '$(AndroidAPILevel)' != '' And '$(ConfigurationType)' == 'StaticLibrary'">
+			<Link Include="$(MSBuildThisFileDirectory)l..\..\lib\native\android\clang\mips64\libjpeg-turbo_mt.a" />
+		</ItemGroup>
+		<ItemGroup Condition="'$(PlatformToolset)' == 'Clang_3_8' And '$(Platform)' == 'armeabi-v7a' And '$(AndroidAPILevel)' != '' And '$(ConfigurationType)' == 'StaticLibrary'">
+			<Link Include="$(MSBuildThisFileDirectory)..\..\lib\native\android\clang\armeabi-v7a\libjpeg-turbo_mt.a" />
+		</ItemGroup>
+		<Copy SourceFiles="@(MyPackageSourceFiles)" DestinationFolder="$(OutputPath)" /> 
+    <Error Condition="'$(PlatformToolset)' != 'Clang_3_8' And '$(AndroidAPILevel)' != ''" Text="The Libjpeg-Turbo NuGet package only contains binaries for Clang_3_8. GCC has been depreciated for ndk development, USE CLANG" />
+  </Target>
+</Project>
