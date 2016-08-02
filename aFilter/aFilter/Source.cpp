@@ -8,7 +8,7 @@ int main() {
  //---------------------------------------------------------------------------------------------
 
 
-    std::string FileName("building.jpg");
+    std::string FileName("tomatoes.jpg");
 
     filter::image im;
 
