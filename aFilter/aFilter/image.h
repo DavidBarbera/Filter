@@ -8,6 +8,7 @@ namespace filter {
         int _pixel_depth;
         std::string _fileName;
         std::vector<unsigned char> dest;
+        unsigned char _color[3];
         
 
         void  flushToFile(std::string FileName, unsigned char *jpgSrc, unsigned long jpgSize) {
@@ -62,6 +63,9 @@ namespace filter {
     public:
 
         image() {
+            _color[0] = 255;    //red
+            _color[1] = 0;      //green
+            _color[2] = 0;      //blue
 
         }
 
@@ -96,16 +100,7 @@ namespace filter {
            
         }
 
- /*      auto IJP(unsigned i, unsigned j, unsigned pixelComponent) {
-           if ((i < 0) | (i >= (int)_width) | (j < 0) | (j >= (int)_height)) {
-               return 0;
-
-           } else {
-               return (int)(i*_pixel_depth + j*_pixel_depth*_width + pixelComponent);
-           }
-       };*/
-
-       void filter() {
+        void sobel() {
            
           auto IJP = [=](unsigned i, unsigned j, unsigned pixelComponent) {
                if ( (i < 0) | (i >= (int)_width) | (j < 0) | (j >= (int)_height) ) {
@@ -116,34 +111,68 @@ namespace filter {
                }
                };
 
-        /* std::vector<int> kernel = {  1,  2, 1,
-                                        2,  4, 2,
-                                        1,  2, 1
-           };*/
-      /*     std::vector<int> kernel = { 1,  1, 1,
-               1,  1, 1,
-               1,  1, 1
-           };*/
-       /*    std::vector<int> kernel = { 0,  -1, 0,
-               -1,  5, -1,
-               0,  -1, 0
-           };*/
-           std::vector<int> kernel = { 1,  0, -1,
-               0,  0, 0,
-               -1,  0, 1
-           };
-         /*  std::vector<int> kernel = { 0,  1, 0,
-               1,  -4, 1,
-              0,  1, 0
-           };
-           */
+           //Sobel Operators:
+           std::vector<int> hy = { -1,-2,-1,0,0,0,1,2,1 };
+           std::vector<int> hx = { -1,0,1,-2,0,2,-1,0,1 };
+           
+           //std::vector<unsigned char> dest;
+           unsigned char *src = _rgb.data();
 
-           int sum = 0;
-           for (int i = 0; i < kernel.size(); ++i) {
-               sum += kernel[i];
+           dest.resize(_width*_height*_pixel_depth);
+           unsigned stride = _pixel_depth*_width;
+
+           unsigned char G=0;
+
+           double dfx=0, dfy=0;
+           for (unsigned y = 0; y < _height; ++y) {
+               for (unsigned x = 0; x < _width; ++x) {
+                   for (unsigned p = 0; p < _pixel_depth; ++p) {
+                  dfx =(hx[0] * src[IJP(x - 1, y - 1, p)] +
+                           hx[1] * src[IJP(x - 1, y, p)] +
+                           hx[2] * src[IJP(x - 1, y + 1, p)] +
+                           hx[3] * src[IJP(x, y - 1, p)] +
+                           hx[4] * src[IJP(x, y, p)] +
+                           hx[5] * src[IJP(x, y + 1, p)] +
+                           hx[6] * src[IJP(x + 1, y - 1, p)] +
+                           hx[7] * src[IJP(x + 1, y, p)] +
+                           hx[8] * src[IJP(x + 1, y + 1, p)]);
+                     dfy = (hy[0] * src[IJP(x - 1, y - 1, p)] +
+                         hy[1] * src[IJP(x - 1, y, p)] +
+                         hy[2] * src[IJP(x - 1, y + 1, p)] +
+                         hy[3] * src[IJP(x, y - 1, p)] +
+                         hy[4] * src[IJP(x, y, p)] +
+                         hy[5] * src[IJP(x, y + 1, p)] +
+                         hy[6] * src[IJP(x + 1, y - 1, p)] +
+                         hy[7] * src[IJP(x + 1, y, p)] +
+                         hy[8] * src[IJP(x + 1, y + 1, p)]);
+                     // Gradient according to L2-norm
+                     G = std::sqrtf(dfx*dfx + dfy*dfy); 
+
+                     dest[IJP(x, y, p)] = (G >= 75) ? _color[p] :0;
+                   }
+               }
            }
-           if (sum == 0) sum = 1;
 
+           std::string newName = _fileName + "Sobel.jpg";
+           boost::interprocess::file_mapping::remove(newName.data());
+           jpegIt(newName, dest.data());
+           dest.resize(0);
+       }
+
+       void prewitt() {
+
+           auto IJP = [=](unsigned i, unsigned j, unsigned pixelComponent) {
+               if ((i < 0) | (i >= (int)_width) | (j < 0) | (j >= (int)_height)) {
+                   return 0;
+
+               } else {
+                   return (int)(i*_pixel_depth + j*_pixel_depth*_width + pixelComponent);
+               }
+           };
+
+           //Prewitt Operators:
+           std::vector<int> hy = { -1,0,1,-1,0,1,-1,0,1 };
+           std::vector<int> hx = { -1,-1,-1,0,0,0,1,1,1 };
 
            //std::vector<unsigned char> dest;
            unsigned char *src = _rgb.data();
@@ -151,28 +180,197 @@ namespace filter {
            dest.resize(_width*_height*_pixel_depth);
            unsigned stride = _pixel_depth*_width;
 
-           unsigned char checkSrc=0,checkDest=0;
+           unsigned char G = 0;
+
+           double dfx = 0, dfy = 0;
            for (unsigned y = 0; y < _height; ++y) {
                for (unsigned x = 0; x < _width; ++x) {
                    for (unsigned p = 0; p < _pixel_depth; ++p) {
-                       checkDest =
-                           (kernel[0] * src[IJP(x - 1, y - 1, p)] +
-                               kernel[1] * src[IJP(x - 1, y, p)] +
-                               kernel[2] * src[IJP(x - 1, y + 1, p)] +
-                               kernel[3] * src[IJP(x, y - 1, p)] +
-                               kernel[4] * src[IJP(x, y, p)] +
-                               kernel[5] * src[IJP(x, y + 1, p)] +
-                               kernel[6] * src[IJP(x + 1, y - 1, p)] +
-                               kernel[7] * src[IJP(x + 1, y, p)] +
-                               kernel[8] * src[IJP(x + 1, y + 1, p)]) / sum;
-                           
-                       dest[IJP(x, y, p)] = checkDest;
-                       checkSrc = src[IJP(x, y, p)];
+                       dfx = (hx[0] * src[IJP(x - 1, y - 1, p)] +
+                           hx[1] * src[IJP(x - 1, y, p)] +
+                           hx[2] * src[IJP(x - 1, y + 1, p)] +
+                           hx[3] * src[IJP(x, y - 1, p)] +
+                           hx[4] * src[IJP(x, y, p)] +
+                           hx[5] * src[IJP(x, y + 1, p)] +
+                           hx[6] * src[IJP(x + 1, y - 1, p)] +
+                           hx[7] * src[IJP(x + 1, y, p)] +
+                           hx[8] * src[IJP(x + 1, y + 1, p)]);
+                       dfy = (hy[0] * src[IJP(x - 1, y - 1, p)] +
+                           hy[1] * src[IJP(x - 1, y, p)] +
+                           hy[2] * src[IJP(x - 1, y + 1, p)] +
+                           hy[3] * src[IJP(x, y - 1, p)] +
+                           hy[4] * src[IJP(x, y, p)] +
+                           hy[5] * src[IJP(x, y + 1, p)] +
+                           hy[6] * src[IJP(x + 1, y - 1, p)] +
+                           hy[7] * src[IJP(x + 1, y, p)] +
+                           hy[8] * src[IJP(x + 1, y + 1, p)]);
+                       // Gradient according to L2-norm
+                       G = std::sqrtf(dfx*dfx + dfy*dfy);
+
+                       dest[IJP(x, y, p)] = (G >= 50) ? _color[p] : 0;
                    }
                }
            }
 
-           std::string newName = _fileName + "filtered.jpg";
+           std::string newName = _fileName + "Prewitt.jpg";
+           boost::interprocess::file_mapping::remove(newName.data());
+           jpegIt(newName, dest.data());
+           dest.resize(0);
+       }
+
+       void sobelFeldman() {
+
+           auto IJP = [=](unsigned i, unsigned j, unsigned pixelComponent) {
+               if ((i < 0) | (i >= (int)_width) | (j < 0) | (j >= (int)_height)) {
+                   return 0;
+
+               } else {
+                   return (int)(i*_pixel_depth + j*_pixel_depth*_width + pixelComponent);
+               }
+           };
+
+           //Sobel-Feldman Operators:
+           std::vector<int> hy = { 3,10,3,0,0,0,-3,-10,-3 };
+           std::vector<int> hx = { 3,0,-3,10,0,-10,3,0,-3 };
+
+           //std::vector<unsigned char> dest;
+           unsigned char *src = _rgb.data();
+
+           dest.resize(_width*_height*_pixel_depth);
+           unsigned stride = _pixel_depth*_width;
+
+           unsigned char G = 0;
+
+           double dfx = 0, dfy = 0;
+           for (unsigned y = 0; y < _height; ++y) {
+               for (unsigned x = 0; x < _width; ++x) {
+                   for (unsigned p = 0; p < _pixel_depth; ++p) {
+                       dfx = (hx[0] * src[IJP(x - 1, y - 1, p)] +
+                           hx[1] * src[IJP(x - 1, y, p)] +
+                           hx[2] * src[IJP(x - 1, y + 1, p)] +
+                           hx[3] * src[IJP(x, y - 1, p)] +
+                           hx[4] * src[IJP(x, y, p)] +
+                           hx[5] * src[IJP(x, y + 1, p)] +
+                           hx[6] * src[IJP(x + 1, y - 1, p)] +
+                           hx[7] * src[IJP(x + 1, y, p)] +
+                           hx[8] * src[IJP(x + 1, y + 1, p)]);
+                       dfy = (hy[0] * src[IJP(x - 1, y - 1, p)] +
+                           hy[1] * src[IJP(x - 1, y, p)] +
+                           hy[2] * src[IJP(x - 1, y + 1, p)] +
+                           hy[3] * src[IJP(x, y - 1, p)] +
+                           hy[4] * src[IJP(x, y, p)] +
+                           hy[5] * src[IJP(x, y + 1, p)] +
+                           hy[6] * src[IJP(x + 1, y - 1, p)] +
+                           hy[7] * src[IJP(x + 1, y, p)] +
+                           hy[8] * src[IJP(x + 1, y + 1, p)]);
+                       // Gradient according to L2-norm
+                       G = std::sqrtf(dfx*dfx + dfy*dfy);
+
+                       dest[IJP(x, y, p)] = (G >= 150) ? _color[p] : 0;
+                   }
+               }
+           }
+
+           std::string newName = _fileName + "SobelFeldman.jpg";
+           boost::interprocess::file_mapping::remove(newName.data());
+           jpegIt(newName, dest.data());
+           dest.resize(0);
+       }
+
+       void roberts() {
+
+           auto IJP = [=](unsigned i, unsigned j, unsigned pixelComponent) {
+               if ((i < 0) | (i >= (int)_width) | (j < 0) | (j >= (int)_height)) {
+                   return 0;
+
+               } else {
+                   return (int)(i*_pixel_depth + j*_pixel_depth*_width + pixelComponent);
+               }
+           };
+
+           //Roberts Operators:
+           std::vector<int> hy = {1,0,0,-1 };
+           std::vector<int> hx = { 0,1,-1,0};
+
+           //std::vector<unsigned char> dest;
+           unsigned char *src = _rgb.data();
+
+           dest.resize(_width*_height*_pixel_depth);
+           unsigned stride = _pixel_depth*_width;
+
+           unsigned char G = 0;
+
+           double dfx = 0, dfy = 0;
+           for (unsigned y = 0; y < _height; ++y) {
+               for (unsigned x = 0; x < _width; ++x) {
+                   for (unsigned p = 0; p < _pixel_depth; ++p) {
+                       dfx = (hx[0] * src[IJP(x, y, p)] +
+                           hx[1] * src[IJP(x, y + 1, p)] +
+                           hx[2] * src[IJP(x + 1, y, p)] +
+                           hx[3] * src[IJP(x + 1, y + 1, p)]);
+                       dfy = (hx[0] * src[IJP(x, y, p)] +
+                           hx[1] * src[IJP(x, y + 1, p)] +
+                           hx[2] * src[IJP(x + 1, y, p)] +
+                           hx[3] * src[IJP(x + 1, y + 1, p)]);
+                       // Gradient according to L1-norm
+                       G = std::abs(dfx) + std::abs(dfy*dfy);
+
+                       dest[IJP(x, y, p)] = (G >= 50) ? _color[p] : 0;
+                   }
+               }
+           }
+
+           std::string newName = _fileName + "Roberts.jpg";
+           boost::interprocess::file_mapping::remove(newName.data());
+           jpegIt(newName, dest.data());
+           dest.resize(0);
+       }
+
+       void laplacian() {
+
+           auto IJP = [=](unsigned i, unsigned j, unsigned pixelComponent) {
+               if ((i < 0) | (i >= (int)_width) | (j < 0) | (j >= (int)_height)) {
+                   return 0;
+
+               } else {
+                   return (int)(i*_pixel_depth + j*_pixel_depth*_width + pixelComponent);
+               }
+           };
+
+           //Laplacian operators:
+       //   std::vector<int> kernel = { 0,  1, 0, 1,  -4, 1, 0,  1, 0 };
+          std::vector<int> kernel = { -1,-1,-1,-1,8,-1,-1,-1,-1};
+
+           //std::vector<unsigned char> dest;
+           unsigned char *src = _rgb.data();
+
+           dest.resize(_width*_height*_pixel_depth);
+           unsigned stride = _pixel_depth*_width;
+
+           // auto pixel = [=](unsigned char pix) {return color[}
+           unsigned char b = 75, G = 0;
+
+           double dfx, dfy;
+           for (unsigned y = 0; y < _height; ++y) {
+               for (unsigned x = 0; x < _width; ++x) {
+                   for (unsigned p = 0; p < _pixel_depth; ++p) {
+                       G = (kernel[0] * src[IJP(x - 1, y - 1, p)] +
+                           kernel[1] * src[IJP(x - 1, y, p)] +
+                           kernel[2] * src[IJP(x - 1, y + 1, p)] +
+                           kernel[3] * src[IJP(x, y - 1, p)] +
+                           kernel[4] * src[IJP(x, y, p)] +
+                           kernel[5] * src[IJP(x, y + 1, p)] +
+                           kernel[6] * src[IJP(x + 1, y - 1, p)] +
+                           kernel[7] * src[IJP(x + 1, y, p)] +
+                           kernel[8] * src[IJP(x + 1, y + 1, p)]);
+
+                       dest[IJP(x, y, p)] = (G >= 50) ? _color[p] : 0;
+                     
+                   }
+               }
+           }
+
+           std::string newName = _fileName + "Laplacian.jpg";
            boost::interprocess::file_mapping::remove(newName.data());
            jpegIt(newName, dest.data());
            dest.resize(0);
