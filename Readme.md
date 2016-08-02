@@ -4,7 +4,4 @@
 
 Building | Prewitt
 ---------|--------
-![alt text](https://github.com/DavidBarbera/Filter/blob/master/docs/building.JPG "building")  |
-
-
-![alt text](https://github.com/DavidBarbera/Filter/blob/master/docs/buildingPrewitt.jpg "Prewitt")
+![building](https://github.com/DavidBarbera/Filter/blob/master/docs/building.JPG "building")  | ![Prewitt](https://github.com/DavidBarbera/Filter/blob/master/docs/buildingPrewitt.jpg "Prewitt")
