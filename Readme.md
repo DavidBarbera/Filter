@@ -1,5 +1,5 @@
 # A collection of edge detector filters
-#### I created a few filters just to tackle image processing in C++.  
+#### I created a few filters just to tackle image processing in C++ on very large images.  
 *Images available in full resolution*  
 
  
